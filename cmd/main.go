@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/fabiotavarespr/crm-backend/config"
+	"github.com/fabiotavarespr/crm-backend/controllers"
+	"github.com/fabiotavarespr/crm-backend/routes"
+	"github.com/fabiotavarespr/crm-backend/services"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -18,7 +19,15 @@ var (
 	server      *gin.Engine
 	ctx         context.Context
 	mongoclient *mongo.Client
-	redisclient *redis.Client
+
+	customerCollection      *mongo.Collection
+	customerService         services.CustomerService
+	CustomerController      controllers.CustomerController
+	CustomerRouteController routes.CustomerRouteController
+
+	healthService         services.HealthService
+	HealthController      controllers.HealthController
+	HealthRouteController routes.HealthRouteController
 )
 
 func init() {
@@ -46,21 +55,15 @@ func init() {
 
 	fmt.Println("MongoDB successfully connected...")
 
-	// Connect to Redis
-	redisclient = redis.NewClient(&redis.Options{
-		Addr: config.RedisUri,
-	})
+	// Collections
+	customerCollection = mongoclient.Database("crm").Collection("customers")
+	customerService = services.NewCustomerService(customerCollection, ctx)
+	CustomerController = controllers.NewCustomerController(customerService)
+	CustomerRouteController = routes.NewCustomerRouteController(CustomerController)
 
-	if _, err := redisclient.Ping(ctx).Result(); err != nil {
-		panic(err)
-	}
-
-	err = redisclient.Set(ctx, "test", "Welcome to Golang with Redis and MongoDB", 0).Err()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Redis client connected successfully...")
+	healthService = services.NewHealthService(mongoclient, ctx)
+	HealthController = controllers.NewHealthController(healthService)
+	HealthRouteController = routes.NewHealthRouteController(HealthController)
 
 	// Create the Gin Engine instance
 	server = gin.Default()
@@ -75,17 +78,8 @@ func main() {
 
 	defer mongoclient.Disconnect(ctx)
 
-	value, err := redisclient.Get(ctx, "test").Result()
-
-	if err == redis.Nil {
-		fmt.Println("key: test does not exist")
-	} else if err != nil {
-		panic(err)
-	}
-
-	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"status": "success", "message": value})
-	})
+	CustomerRouteController.CustomerRoute(server)
+	HealthRouteController.HealthRoute(server)
 
 	log.Fatal(server.Run(":" + config.Port))
 }

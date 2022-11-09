@@ -11,14 +11,6 @@ services:
       - '6000:27017'
     volumes:
       - mongodb:/data/db
-
-  redis:
-    image: redis:alpine
-    container_name: redis
-    ports:
-      - '6379:6379'
-    volumes:
-      - redisDB:/data
+      
 volumes:
   mongodb:
-  redisDB:
