@@ -15,7 +15,8 @@ import (
 
 type CustomerService interface {
 	AddCustomer(*models.CustomerCreateRequest) (*models.CustomerCreateResponse, error)
-	ListCustomers() (*models.CustomersGetResponse, error)
+	GetCustomers() (*models.CustomersGetResponse, error)
+	GetCustomer(id string) (*models.CustomerGetResponse, error)
 }
 
 type CustomerServiceImpl struct {
@@ -62,7 +63,7 @@ func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerCreateReques
 	return newCustomer, nil
 }
 
-func (cs *CustomerServiceImpl) ListCustomers() (*models.CustomersGetResponse, error) {
+func (cs *CustomerServiceImpl) GetCustomers() (*models.CustomersGetResponse, error) {
 	newCustomers := make([]models.CustomerGetResponse, 0)
 	res, err := cs.collection.Find(cs.ctx, bson.M{})
 	if err != nil {
@@ -82,4 +83,19 @@ func (cs *CustomerServiceImpl) ListCustomers() (*models.CustomersGetResponse, er
 	return &models.CustomersGetResponse{
 		Customers: newCustomers,
 	}, nil
+}
+
+func (cs *CustomerServiceImpl) GetCustomer(id string) (*models.CustomerGetResponse, error) {
+	var newCustomer *models.CustomerGetResponse
+
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	query := bson.M{"_id": objectID}
+
+	err := cs.collection.FindOne(cs.ctx, query).Decode(&newCustomer)
+	if err != nil {
+		return nil, err
+	}
+
+	return newCustomer, nil
+
 }

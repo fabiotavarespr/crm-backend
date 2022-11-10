@@ -39,9 +39,22 @@ func (cc *CustomerController) AddCustomer(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"customer": newCustomer}})
 }
 
-func (cc *CustomerController) ListCustomers(ctx *gin.Context) {
+func (cc *CustomerController) GetCustomers(ctx *gin.Context) {
 
-	newCustomers, err := cc.customerService.ListCustomers()
+	newCustomers, err := cc.customerService.GetCustomers()
+
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": newCustomers})
+}
+
+func (cc *CustomerController) GetCustomer(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	newCustomers, err := cc.customerService.GetCustomer(id)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})

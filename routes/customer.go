@@ -14,6 +14,7 @@ func NewCustomerRouteController(customerController controllers.CustomerControlle
 }
 
 func (rc *CustomerRouteController) CustomerRoute(rg *gin.Engine) {
-	rg.GET("/customers", rc.customerController.ListCustomers)
+	rg.GET("/customers/:id", rc.customerController.GetCustomer)
+	rg.GET("/customers", rc.customerController.GetCustomers)
 	rg.POST("/customers", rc.customerController.AddCustomer)
 }
