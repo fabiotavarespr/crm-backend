@@ -18,7 +18,7 @@ func NewCustomerController(customerService services.CustomerService) CustomerCon
 }
 
 func (cc *CustomerController) AddCustomer(ctx *gin.Context) {
-	var customer *models.CustomerRequest
+	var customer *models.CustomerCreateRequest
 
 	if err := ctx.ShouldBindJSON(&customer); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
@@ -37,4 +37,16 @@ func (cc *CustomerController) AddCustomer(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"customer": newCustomer}})
+}
+
+func (cc *CustomerController) ListCustomers(ctx *gin.Context) {
+
+	newCustomers, err := cc.customerService.ListCustomers()
+
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": newCustomers})
 }

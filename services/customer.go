@@ -14,7 +14,8 @@ import (
 )
 
 type CustomerService interface {
-	AddCustomer(*models.CustomerRequest) (*models.CustomerResponse, error)
+	AddCustomer(*models.CustomerCreateRequest) (*models.CustomerCreateResponse, error)
+	ListCustomers() (*models.CustomersGetResponse, error)
 }
 
 type CustomerServiceImpl struct {
@@ -26,7 +27,7 @@ func NewCustomerService(collection *mongo.Collection, ctx context.Context) Custo
 	return &CustomerServiceImpl{collection, ctx}
 }
 
-func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerRequest) (*models.CustomerResponse, error) {
+func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerCreateRequest) (*models.CustomerCreateResponse, error) {
 	customer.ID = primitive.NewObjectID()
 	customer.CreatedAt = time.Now()
 	customer.UpdatedAt = customer.CreatedAt
@@ -50,7 +51,7 @@ func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerRequest) (*m
 		return nil, errors.New("could not create index for email")
 	}
 
-	var newCustomer *models.CustomerResponse
+	var newCustomer *models.CustomerCreateResponse
 	query := bson.M{"_id": res.InsertedID}
 
 	err = cs.collection.FindOne(cs.ctx, query).Decode(&newCustomer)
@@ -59,4 +60,26 @@ func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerRequest) (*m
 	}
 
 	return newCustomer, nil
+}
+
+func (cs *CustomerServiceImpl) ListCustomers() (*models.CustomersGetResponse, error) {
+	newCustomers := make([]models.CustomerGetResponse, 0)
+	res, err := cs.collection.Find(cs.ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Close(cs.ctx)
+
+	for res.Next(cs.ctx) {
+		var customer models.CustomerGetResponse
+		if err = res.Decode(&customer); err != nil {
+			return nil, err
+		}
+		newCustomers = append(newCustomers, customer)
+	}
+
+	return &models.CustomersGetResponse{
+		Customers: newCustomers,
+	}, nil
 }
