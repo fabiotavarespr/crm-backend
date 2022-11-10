@@ -3,6 +3,7 @@ module github.com/fabiotavarespr/crm-backend
 go 1.19
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.19.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/spf13/viper v1.14.0
 	go.mongodb.org/mongo-driver v1.11.0
