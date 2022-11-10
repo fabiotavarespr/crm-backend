@@ -17,7 +17,7 @@ func NewInitialDatabase(customerService services.CustomerService) InitialDatabas
 func (id InitialDatabase) Start() error {
 	fake := faker.New()
 	for i := 0; i < 3; i++ {
-		_, err := id.customerService.AddCustomer(&models.CustomerRequest{
+		_, err := id.customerService.AddCustomer(&models.CustomerCreateRequest{
 			Name:      fake.Person().Name(),
 			Email:     fake.Person().Contact().Email,
 			Role:      fake.Company().JobTitle(),
