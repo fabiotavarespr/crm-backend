@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/fabiotavarespr/crm-backend/config"
+	"github.com/fabiotavarespr/crm-backend/config/populate"
 	"github.com/fabiotavarespr/crm-backend/controllers"
 	"github.com/fabiotavarespr/crm-backend/routes"
 	"github.com/fabiotavarespr/crm-backend/services"
@@ -65,6 +66,15 @@ func init() {
 	HealthController = controllers.NewHealthController(healthService)
 	HealthRouteController = routes.NewHealthRouteController(HealthController)
 
+	initialDatabase := populate.NewInitialDatabase(customerService)
+	err = initialDatabase.Start()
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Populate iniital database with successfully...")
+
 	// Create the Gin Engine instance
 	server = gin.Default()
 }
@@ -78,8 +88,8 @@ func main() {
 
 	defer mongoclient.Disconnect(ctx)
 
-	CustomerRouteController.CustomerRoute(server)
 	HealthRouteController.HealthRoute(server)
+	CustomerRouteController.CustomerRoute(server)
 
 	log.Fatal(server.Run(":" + config.Port))
 }
