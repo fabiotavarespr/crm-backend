@@ -1,9 +1,9 @@
 package populate
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/fabiotavarespr/crm-backend/models"
 	"github.com/fabiotavarespr/crm-backend/services"
+	"github.com/jaswdr/faker"
 )
 
 type InitialDatabase struct {
@@ -15,13 +15,14 @@ func NewInitialDatabase(customerService services.CustomerService) InitialDatabas
 }
 
 func (id InitialDatabase) Start() error {
+	fake := faker.New()
 	for i := 0; i < 3; i++ {
 		_, err := id.customerService.AddCustomer(&models.CustomerRequest{
-			Name:      gofakeit.Name(),
-			Email:     gofakeit.Email(),
-			Role:      gofakeit.JobDescriptor(),
-			Phone:     gofakeit.Phone(),
-			Contacted: gofakeit.Bool(),
+			Name:      fake.Person().Name(),
+			Email:     fake.Person().Contact().Email,
+			Role:      fake.Company().JobTitle(),
+			Phone:     fake.Person().Contact().Phone,
+			Contacted: fake.Bool(),
 		})
 		if err != nil {
 			return err
