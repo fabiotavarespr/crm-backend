@@ -15,17 +15,25 @@ func NewInitialDatabase(customerService services.CustomerService) InitialDatabas
 }
 
 func (id InitialDatabase) Start() error {
-	fake := faker.New()
-	for i := 0; i < 3; i++ {
-		_, err := id.customerService.AddCustomer(&models.CustomerCreateRequest{
-			Name:      fake.Person().Name(),
-			Email:     fake.Person().Contact().Email,
-			Role:      fake.Company().JobTitle(),
-			Phone:     fake.Person().Contact().Phone,
-			Contacted: fake.Bool(),
-		})
-		if err != nil {
-			return err
+	var customers, err = id.customerService.GetCustomers()
+	if err != nil {
+		return err
+	}
+
+	if len(customers.Customers) == 0 {
+		fake := faker.New()
+		roles := []string{"admin", "customer", "manager"}
+		for i := 0; i < 3; i++ {
+			_, err := id.customerService.AddCustomer(&models.CustomerCreateRequest{
+				Name:      fake.Person().Name(),
+				Email:     fake.Person().Contact().Email,
+				Role:      roles[i],
+				Phone:     fake.Person().Contact().Phone,
+				Contacted: fake.Bool(),
+			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
