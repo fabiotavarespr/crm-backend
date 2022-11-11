@@ -36,7 +36,7 @@ func (cc *CustomerController) AddCustomer(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"status": "success", "data": gin.H{"customer": newCustomer}})
+	ctx.JSON(http.StatusCreated, newCustomer)
 }
 
 func (cc *CustomerController) GetCustomers(ctx *gin.Context) {
@@ -48,18 +48,68 @@ func (cc *CustomerController) GetCustomers(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": newCustomers})
+	if len(newCustomers.Customers) == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "There's no customer"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newCustomers)
 }
 
 func (cc *CustomerController) GetCustomer(ctx *gin.Context) {
 	id := ctx.Param("id")
 
-	newCustomers, err := cc.customerService.GetCustomer(id)
+	newCustomer, err := cc.customerService.GetCustomer(id)
 
 	if err != nil {
+		if strings.Contains(err.Error(), "no documents in result") {
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Customer not found"})
+			return
+		}
 		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": newCustomers})
+	ctx.JSON(http.StatusOK, newCustomer)
+}
+
+func (cc *CustomerController) DeleteCustomer(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	err := cc.customerService.DeleteCustomer(id)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "no documents in result") {
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Customer not found"})
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusNoContent, nil)
+}
+
+func (cc *CustomerController) UpdateCustomer(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	var customer *models.CustomerUpdateRequest
+
+	if err := ctx.ShouldBindJSON(&customer); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "fail", "message": err.Error()})
+		return
+	}
+
+	updateCustomer, err := cc.customerService.UpdateCustomer(id, customer)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "no documents in result") {
+			ctx.JSON(http.StatusNotFound, gin.H{"status": "error", "message": "Customer not found"})
+			return
+		}
+		ctx.JSON(http.StatusBadGateway, gin.H{"status": "error", "message": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, updateCustomer)
 }

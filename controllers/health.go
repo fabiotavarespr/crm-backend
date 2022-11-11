@@ -22,5 +22,5 @@ func (hc *HealthController) CheckHealth(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"status": "success", "data": gin.H{"health": newHealth}})
+	ctx.JSON(http.StatusOK, newHealth)
 }

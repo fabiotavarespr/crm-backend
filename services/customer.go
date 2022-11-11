@@ -16,7 +16,9 @@ import (
 type CustomerService interface {
 	AddCustomer(*models.CustomerCreateRequest) (*models.CustomerCreateResponse, error)
 	GetCustomers() (*models.CustomersGetResponse, error)
-	GetCustomer(id string) (*models.CustomerGetResponse, error)
+	GetCustomer(string) (*models.CustomerGetResponse, error)
+	UpdateCustomer(string, *models.CustomerUpdateRequest) (*models.CustomerUpdateResponse, error)
+	DeleteCustomer(string) error
 }
 
 type CustomerServiceImpl struct {
@@ -38,7 +40,7 @@ func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerCreateReques
 
 	if err != nil {
 		if er, ok := err.(mongo.WriteException); ok && er.WriteErrors[0].Code == 11000 {
-			return nil, errors.New("customer with that email already exist")
+			return nil, errors.New("Customer with that email already exist")
 		}
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (cs *CustomerServiceImpl) AddCustomer(customer *models.CustomerCreateReques
 	index := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
 
 	if _, err := cs.collection.Indexes().CreateOne(cs.ctx, index); err != nil {
-		return nil, errors.New("could not create index for email")
+		return nil, errors.New("Could not create index for email")
 	}
 
 	var newCustomer *models.CustomerCreateResponse
@@ -98,4 +100,46 @@ func (cs *CustomerServiceImpl) GetCustomer(id string) (*models.CustomerGetRespon
 
 	return newCustomer, nil
 
+}
+
+func (cs *CustomerServiceImpl) DeleteCustomer(id string) error {
+
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	query := bson.M{"_id": objectID}
+
+	deletedCustomer := cs.collection.FindOneAndDelete(cs.ctx, query)
+	if deletedCustomer.Err() != nil {
+		return deletedCustomer.Err()
+	}
+
+	return nil
+}
+
+func (cs *CustomerServiceImpl) UpdateCustomer(id string, customer *models.CustomerUpdateRequest) (*models.CustomerUpdateResponse, error) {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	query := bson.M{"_id": objectID}
+
+	customer.UpdatedAt = time.Now()
+	customer.ID = objectID
+
+	update := bson.M{
+		"$set": customer,
+	}
+
+	result := cs.collection.FindOneAndUpdate(cs.ctx, query, update)
+	if result.Err() != nil {
+		if strings.Contains(result.Err().Error(), "E11000") {
+			return nil, errors.New("Customer with that email already exist")
+		}
+		return nil, result.Err()
+	}
+
+	var updatedCustomer *models.CustomerUpdateResponse
+
+	err := cs.collection.FindOne(cs.ctx, query).Decode(&updatedCustomer)
+	if err != nil {
+		return nil, err
+	}
+
+	return updatedCustomer, nil
 }
