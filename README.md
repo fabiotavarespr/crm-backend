@@ -1,4 +1,8 @@
 # CRM Backend - Udacity Golang Nanodegree Project
+[![Go](https://img.shields.io/badge/go-1.19-informational?logo=go)](https://go.dev)
+[![Gin](https://img.shields.io/badge/gin_gonic-v1.8.1-informational?logo=gin-gonic)](https://gin-gonic.com)
+[![Mongo](https://img.shields.io/badge/mongo_db-6.0.2-informational?logo=mongo)](https://www.mongodb.com)
+[![GitHub release](https://img.shields.io/github/tag/fabiotavarespr/crm-backend.svg)](https://github.com/fabiotavarespr/crm-backend/releases)
 
 This project implements a basic CRUD in a REST-API.
 
