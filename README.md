@@ -10,9 +10,14 @@ Your context would be for a customer in a CRM project scenario
 - [Stack](#stack)
 - [Execution](#execution)
   - [Start infrastructure](#start-infrastructure)
-    - [By Makefile](#by-makefile)
+    - [Makefile](#makefile)
+    - [Docker Compose](#docker-compose)
   - [Stop infrastructure](#stop-infrastructure)
-    - [By Makefile](#by-makefile-1)
+    - [Makefile](#makefile-1)
+    - [Docker Compose](#docker-compose-1)
+  - [Start project](#start-project)
+    - [Makefile](#makefile-2)
+    - [Go command](#go-command)
 - [API](#api)
 - [Endpoint](#endpoint)
   - [Getting all customers](#getting-all-customers)
@@ -49,29 +54,40 @@ First, you need to start your docker infrastructure with the following command:
 
 ## Start infrastructure
 
-### By Makefile
+### Makefile
 ```sh
 make docker-compose-up
 ```
 
+### Docker Compose
+```sh
+docker-compose -f resources/docker-compose/docker-compose.yaml up -d
+```
+
 ## Stop infrastructure
 
-### By Makefile
+### Makefile
 ```sh
 make docker-compose-down
 ```
 
-or
+### Docker Compose
+```sh
+docker-compose -f resources/docker-compose/docker-compose.yaml down --remove-orphans
+```
 
-- By Docker Compose:   `docker-compose -f resources/docker-compose/docker-compose.yaml up -d` | `docker-compose -f resources/docker-compose/docker-compose.yaml down --remove-orphans`
-
+## Start project
 Once your infrastructure is up, start the API with the following command:
 
-- By Makefile: `make run-api`
+### Makefile
+```sh
+make run-api
+```
 
-or
-
-- By Go:   `go run ./cmd/main.go`
+### Go command
+```sh
+go run ./cmd/main.go
+```
 
 
 # API
