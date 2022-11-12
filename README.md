@@ -9,6 +9,10 @@ Your context would be for a customer in a CRM project scenario
 - [Index](#index)
 - [Stack](#stack)
 - [Execution](#execution)
+  - [Start infrastructure](#start-infrastructure)
+    - [By Makefile](#by-makefile)
+  - [Stop infrastructure](#stop-infrastructure)
+    - [By Makefile](#by-makefile-1)
 - [API](#api)
 - [Endpoint](#endpoint)
   - [Getting all customers](#getting-all-customers)
@@ -42,7 +46,20 @@ Your context would be for a customer in a CRM project scenario
 # Execution
 
 First, you need to start your docker infrastructure with the following command:
-- By Makefile: `make docker-compose-up` | `make docker-compose-down`
+
+## Start infrastructure
+
+### By Makefile
+```sh
+make docker-compose-up
+```
+
+## Stop infrastructure
+
+### By Makefile
+```sh
+make docker-compose-down
+```
 
 or
 
